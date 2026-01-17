@@ -57,7 +57,7 @@ function Register() {
         <div className="auth-branding">
           <h2>Looks like you're new here!</h2>
           <p>Sign up with your mobile number to get started</p>
-          <img src="../../public/velora.png" alt="Register Art" />
+          <img src="/velora.png" alt="Register Art" />
         </div>
 
         {/* RIGHT SIDE */}
@@ -130,7 +130,7 @@ function Register() {
             <div className="divider"><span>OR</span></div>
 
             <button type="button" className="google-btn" onClick={handleGoogleLogin}>
-              <img src="../../public/G.png" alt="Google" width={20} />
+              <img src="/G.png" alt="Google" width={20} />
               Continue with Google
             </button>
 

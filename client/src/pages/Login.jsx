@@ -52,7 +52,7 @@ function Login() {
         <div className="auth-branding">
           <h2>Login</h2>
           <p>Get access to your Orders, Wishlist and Recommendations</p>
-          <img src="../../public/velora.png" alt="Login Art" />
+          <img src="/velora.png" alt="Login Art" />
         </div>
 
         {/* RIGHT SIDE: FORM */}
@@ -96,7 +96,7 @@ function Login() {
             <div className="divider"><span>OR</span></div>
 
             <button type="button" className="google-btn" onClick={handleGoogleLogin}>
-              <img src="../../public/G.png" alt="Google" width={20} />
+              <img src="/G.png" alt="Google" width={20} />
               Continue with Google
             </button>
 
