@@ -1,0 +1,200 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --- NAVBAR WRAPPER --- */
+.navbar-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #ffffff;
+  box-shadow: 0 4px 12px 0 rgba(0,0,0,0.05);
+}
+
+.navbar {
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 64px;
+  font-family: 'Inter', sans-serif;
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 20px;
+  gap: 20px;
+}
+
+/* --- LOGO --- */
+.nav-left { display: flex; align-items: center; gap: 15px; }
+.navbar-logo { text-decoration: none; display: flex; align-items: baseline; }
+.logo-text { font-size: 20px; font-weight: 800; color: #2874f0; letter-spacing: -0.5px; font-style: italic; }
+.logo-dot { color: #ffe500; font-size: 24px; line-height: 0; font-weight: bold; }
+
+/* --- SEARCH BAR (The Core Feature) --- */
+.navbar-search {
+  flex: 1;
+  max-width: 600px;
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #f0f5ff;
+  border-radius: 4px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.search-input-wrapper:focus-within {
+  background: white;
+  border-color: #2874f0;
+  box-shadow: 0 2px 8px rgba(40,116,240,0.15);
+}
+
+.search-input-wrapper input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 10px;
+  outline: none;
+  font-size: 14px;
+  color: #333;
+}
+
+.search-btn {
+  background: none;
+  border: none;
+  color: #2874f0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 8px;
+}
+
+/* --- ACTIONS (Right Side) --- */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+/* Common Button Style */
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #212121;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.action-btn:hover { background: #f9f9f9; color: #2874f0; }
+
+.login-text { 
+  background: white; color: #2874f0; border: 1px solid #dbdbdb;
+  padding: 6px 20px; border-radius: 2px; font-weight: 600;
+}
+.login-text:hover { background: #2874f0; color: white; border-color: #2874f0; }
+
+/* Cart Button Special */
+.cart-btn { gap: 8px; position: relative; }
+
+/* Icons */
+.action-icon { position: relative; color: #212121; display: flex; align-items: center; transition: color 0.2s; }
+.action-icon:hover { color: #2874f0; }
+
+/* Badges */
+.badge {
+  position: absolute; top: -5px; right: -8px;
+  background: #ff6161; color: white;
+  font-size: 10px; font-weight: 700;
+  height: 16px; width: 16px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid white;
+}
+.cart-badge { top: 0; right: 0; }
+
+/* --- DROPDOWNS --- */
+.dropdown-container { position: relative; }
+.chevron { transition: transform 0.2s; color: #878787; }
+.chevron.rotate { transform: rotate(180deg); }
+
+.dropdown-menu {
+  position: absolute; top: 45px; right: -10px; width: 240px;
+  background: white; border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  border: 1px solid #f0f0f0;
+  padding: 8px 0; z-index: 100;
+  animation: fadeIn 0.2s ease;
+}
+.dropdown-menu::before {
+  content: ''; position: absolute; top: -6px; right: 20px;
+  width: 12px; height: 12px; background: white;
+  transform: rotate(45deg); border-left: 1px solid #f0f0f0; border-top: 1px solid #f0f0f0;
+}
+
+@keyframes fadeIn { from {opacity: 0; transform: translateY(-5px);} to {opacity: 1; transform: translateY(0);} }
+
+.dd-header { padding: 12px 20px; background: #f9f9f9; border-bottom: 1px solid #f0f0f0; }
+.dd-header strong { display: block; font-size: 14px; color: #212121; }
+.dd-header small { color: #878787; }
+.dd-sub { padding: 0 20px 10px; font-size: 12px; color: #878787; }
+
+.dd-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 20px; color: #212121; font-size: 14px;
+  text-decoration: none; cursor: pointer; transition: background 0.2s;
+}
+.dd-item:hover { background: #f5faff; color: #2874f0; }
+.dd-item svg { color: #878787; }
+.dd-item:hover svg { color: #2874f0; }
+
+.dd-divider { height: 1px; background: #e0e0e0; margin: 4px 0; }
+.dd-login-btn { display: block; margin: 10px 20px; text-align: center; background: #2874f0; color: white; padding: 10px; font-weight: 600; text-decoration: none; border-radius: 2px; }
+
+/* --- MOBILE DRAWER --- */
+.mobile-menu-icon { display: none; cursor: pointer; color: #212121; }
+.mobile-drawer {
+  position: fixed; top: 0; left: -300px; width: 280px; height: 100vh;
+  background: white; z-index: 1100; transition: left 0.3s ease;
+  box-shadow: 4px 0 16px rgba(0,0,0,0.1);
+  display: flex; flex-direction: column;
+}
+.mobile-drawer.open { left: 0; }
+
+.drawer-header {
+  background: #2874f0; color: white; padding: 20px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.drawer-header h4 { margin: 0; font-size: 16px; }
+.drawer-header span { font-size: 12px; opacity: 0.9; }
+.avatar { width: 40px; height: 40px; background: white; color: #2874f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-bottom: 10px; }
+.drawer-login { color: white; font-weight: 700; text-decoration: none; font-size: 16px; }
+
+.drawer-list { list-style: none; padding: 10px 0; overflow-y: auto; }
+.drawer-list li a, .drawer-list li.logout {
+  display: flex; align-items: center; gap: 15px; padding: 16px 24px;
+  color: #212121; text-decoration: none; font-size: 14px; font-weight: 500;
+}
+.drawer-list li a:hover { background: #f0f5ff; color: #2874f0; }
+.drawer-list svg { color: #878787; }
+
+.drawer-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5); z-index: 1050;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .desktop-only { display: none !important; }
+  .mobile-menu-icon { display: block; }
+  .navbar-search { display: none; /* Mobile search requires a different approach or placement below nav */ }
+  .navbar-container { padding: 0 15px; }
+  .nav-left { gap: 10px; }
+  .user-name { display: none; }
+}

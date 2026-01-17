@@ -1,0 +1,202 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+.auth-page {
+  min-height: 100vh;
+  background-color: #f1f3f6;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.auth-card {
+  display: flex;
+  background: white;
+  width: 850px;
+  height: 520px;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+/* LEFT SIDE */
+.auth-branding {
+  width: 40%;
+  background-color: #2874f0;
+  padding: 40px 30px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.auth-branding h2 { font-size: 28px; font-weight: 500; margin-bottom: 10px; }
+.auth-branding p { font-size: 16px; line-height: 1.5; color: #dbdbdb; margin-bottom: auto; }
+.auth-branding img { width: 100%; object-fit: contain; margin-top: 20px; }
+
+/* RIGHT SIDE */
+.auth-form-container {
+  width: 60%;
+  padding: 40px 35px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+form { display: flex; flex-direction: column; gap: 20px; }
+
+/* Floating Labels Style Input */
+.input-group {
+  position: relative;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.input-icon {
+  position: absolute;
+  left: 0; top: 12px;
+  color: #878787;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px 10px 10px 30px;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  background: transparent;
+}
+
+/* Placeholder Animation Hack */
+.input-group label {
+  position: absolute;
+  left: 30px; top: 10px;
+  color: #878787;
+  font-size: 14px;
+  transition: 0.2s ease all;
+  pointer-events: none;
+}
+
+.input-group input:focus ~ label,
+.input-group input:not(:placeholder-shown) ~ label {
+  top: -12px;
+  font-size: 11px;
+  color: #2874f0;
+  left: 0;
+}
+
+/* Hide default placeholder to make floating label work */
+.input-group input::placeholder { color: transparent; }
+
+/* BUTTONS */
+.form-footer p { font-size: 11px; color: #878787; margin-bottom: 15px; }
+
+.auth-btn {
+  background: #fb641b;
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,.2);
+  transition: background 0.2s;
+}
+.auth-btn:hover { background: #e85a16; }
+
+/* DIVIDER */
+.divider {
+  display: flex; align-items: center; text-align: center;
+  margin: 10px 0; color: #878787; font-size: 13px;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; border-bottom: 1px solid #e0e0e0;
+}
+.divider span { padding: 0 10px; }
+
+/* GOOGLE BTN */
+.google-btn {
+  background: white;
+  border: 1px solid #e0e0e0;
+  width: 100%;
+  padding: 12px;
+  display: flex; justify-content: center; align-items: center; gap: 10px;
+  font-size: 14px; color: #212121; font-weight: 500;
+  cursor: pointer; border-radius: 2px;
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,.1);
+}
+.google-btn:hover { background: #f9f9f9; }
+
+/* SWITCH LINK */
+.switch-link {
+  text-align: center;
+  color: #2874f0;
+  font-weight: 500;
+  font-size: 14px;
+  text-decoration: none;
+  margin-top: 15px;
+  display: block;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .auth-card { width: 100%; height: auto; flex-direction: column; }
+  .auth-branding { width: 100%; height: 150px; padding: 20px; text-align: center; }
+  .auth-branding img { display: none; }
+  .auth-form-container { width: 100%; padding: 20px; }
+}
+
+
+
+/* Update input padding to make space for the eye icon */
+.input-group input {
+  width: 100%;
+  padding: 10px 40px 10px 30px; /* Right padding 40px kar diya */
+  border: none;
+  outline: none;
+  font-size: 15px;
+  background: transparent;
+}
+
+/* Toggle Button Styling */
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #878787;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+  z-index: 10;
+}
+
+.password-toggle-btn:hover {
+  color: #2874f0; /* Blue on hover */
+}
+
+
+
+.forgot-pass-wrapper {
+  text-align: right; /* Right side bhejne ke liye */
+  margin-top: 8px;   /* Thoda gap */
+  margin-bottom: 12px;
+}
+
+.forgot-link {
+  color: #2563eb; /* Blue color */
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+  color: #1d4ed8; /* Darker blue on hover */
+}

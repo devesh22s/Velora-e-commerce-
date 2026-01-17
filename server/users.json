@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "password": "$2b$08$7Zt2KqT4B9cSm5XTEd624.oxX7QX5VrlBhMh.yk8DcgImDNh9D/RK",
+    "role": "admin"
+  },
+  {
+    "id": 1766681730905,
+    "name": "devesh",
+    "email": "d@gmail.com",
+    "password": "$2b$08$2ChqYRLB7z4HZC9yzi9U8uXYbC5KJog5ClSRhuMJIZtzqpTSTJr.W",
+    "role": "customer"
+  },
+  {
+    "id": 1,
+    "name": "Super Admin",
+    "email": "admin@store.com",
+    "password": "$2b$08$0wDbVF6rX4dXlDcX8D6NvuBhcxaIBu6mO2gnnp1BpBHS4/6LTt3wC",
+    "role": "admin"
+  }
+]

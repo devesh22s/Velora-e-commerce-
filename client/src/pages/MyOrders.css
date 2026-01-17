@@ -1,0 +1,279 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --- Page Layout --- */
+.my-orders-page {
+  min-height: 100vh;
+  background-color: #f1f3f6; /* Light grey background */
+  font-family: 'Inter', sans-serif;
+  color: #212121;
+  padding-bottom: 4rem;
+}
+
+.my-orders-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+}
+
+/* --- State Messages --- */
+.state-msg {
+  text-align: center;
+  padding: 3rem;
+  color: #6b7280;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  margin-bottom: 1rem;
+}
+.error-msg { color: #ef4444; }
+
+/* --- Empty State --- */
+.empty-orders {
+  background: white;
+  padding: 4rem 2rem;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.1);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.empty-icon { color: #e0e0e0; margin-bottom: 1.5rem; }
+.empty-title { font-size: 1.25rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
+.empty-text { color: #878787; font-size: 0.9rem; }
+
+/* --- Order Card (Professional Look) --- */
+.order-card {
+  background: white;
+  border-radius: 4px; /* Sharp professional corners */
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.1);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.order-card:hover {
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+/* --- Header Section --- */
+.order-header {
+  background-color: #fafafa;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.order-meta {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.order-id {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #212121;
+  background: #e0e0e0;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.order-date {
+  font-size: 0.85rem;
+  color: #878787;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.order-status-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  background-color: #e3f2fd; 
+  color: #1565c0;
+}
+
+/* --- Tracker Section --- */
+.order-tracker-section {
+  padding: 20px;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* --- Order Body (Grid Layout) --- */
+.order-body {
+  display: flex;
+  padding: 0;
+}
+
+/* Left Side: Items */
+.order-items {
+  flex: 2;
+  padding: 20px;
+  border-right: 1px solid #f0f0f0;
+}
+
+.order-item {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+.order-item:last-child { margin-bottom: 0; }
+
+.order-item img {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  padding: 4px;
+  background: #fff;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.item-name {
+  font-weight: 500;
+  color: #212121;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.item-meta {
+  font-size: 0.8rem;
+  color: #878787;
+  margin-bottom: 4px;
+}
+
+.item-price-tag {
+  font-weight: 600;
+  color: #212121;
+  font-size: 0.95rem;
+}
+
+/* Right Side: Sidebar info */
+.order-info-sidebar {
+  flex: 1;
+  padding: 20px;
+  background-color: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.info-group h4 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #878787;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-group p {
+  font-size: 0.85rem;
+  color: #212121;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Total Amount Styling */
+.total-group {
+  margin-top: auto; /* Push to bottom of sidebar */
+  padding-top: 15px;
+  border-top: 1px dashed #d1d5db; /* Separator line */
+}
+
+.total-amount {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #212121;
+  display: block;
+  margin-top: 5px;
+}
+
+/* --- Action Footer --- */
+.order-actions {
+  background: white;
+  border-top: 1px solid #f0f0f0;
+}
+
+.view-details-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 16px 0; /* Taller touch target */
+  color: #2874f0; /* Flipkart Blue */
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.view-details-btn:hover {
+  background-color: #f9f9f9;
+  color: #1a5ac6; /* Darker Blue */
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+  .order-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .order-meta {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .order-body {
+    flex-direction: column;
+  }
+
+  .order-items {
+    border-right: none;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .order-info-sidebar {
+    background-color: #f9f9f9;
+    padding: 15px;
+  }
+  
+  .view-details-btn {
+    font-size: 0.85rem;
+  }
+}

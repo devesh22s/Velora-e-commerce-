@@ -1,0 +1,303 @@
+/* --- Page Layout --- */
+.add-product-page {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding-bottom: 3rem;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.add-product-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 2rem;
+}
+
+/* --- Form Grid Layout --- */
+.product-form-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* Left side big, Right side small */
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .product-form-layout {
+    grid-template-columns: 1fr; /* Mobile par single column */
+  }
+}
+
+/* --- Cards (White Box Style) --- */
+.form-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 0.75rem;
+}
+
+/* --- Input Fields --- */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+  margin-bottom: 0.5rem;
+}
+
+.form-input, .form-select {
+  width: 100%;
+  padding: 0.625rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+  box-sizing: border-box; /* Important for padding */
+}
+
+.form-input:focus, .form-select:focus {
+  border-color: #2563eb;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-input:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+/* --- Variants Section --- */
+.variant-input-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.add-variant-btn {
+  background-color: #1f2937;
+  color: white;
+  padding: 0.625rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.add-variant-btn:hover {
+  background-color: #000;
+}
+
+/* Variant Table */
+.variant-table-container {
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.variant-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.variant-table th {
+  background-color: #f9fafb;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.variant-table td {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #e5e7eb;
+  color: #4b5563;
+}
+
+.badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-instock { background-color: #def7ec; color: #03543f; }
+.badge-outstock { background-color: #fde8e8; color: #9b1c1c; }
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+}
+
+.delete-btn:hover { color: #b91c1c; }
+
+/* --- Right Side: Image Upload --- */
+.image-upload-box {
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.image-upload-box:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.file-input-hidden {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #9ca3af;
+}
+
+.upload-preview {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* --- Submit Button --- */
+.publish-btn {
+  width: 100%;
+  margin-top: 1.5rem;
+  background-color: #16a34a; /* Green */
+  color: white;
+  padding: 0.875rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background 0.2s;
+}
+
+.publish-btn:hover {
+  background-color: #15803d;
+}
+
+.publish-btn:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+
+
+/* ... Purana CSS same rakhein ... */
+
+/* New Image Grid Styles */
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 columns */
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.image-preview-box {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1; /* Square box */
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+.image-preview-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.remove-img-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.main-tag {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    background: #2563eb;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.upload-placeholder-box {
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    aspect-ratio: 1;
+    transition: all 0.2s;
+}
+
+.upload-placeholder-box:hover {
+    border-color: #2563eb;
+    background: #eff6ff;
+}

@@ -1,0 +1,211 @@
+/* --- VARIABLES FOR CONSISTENCY --- */
+:root {
+  --track-green: #26a541; /* Flipkart Green */
+  --track-gray: #e0e0e0;
+  --track-text-main: #212121;
+  --track-text-sub: #878787;
+  --track-blue-bg: #f0f5ff;
+  --track-blue-text: #2874f0;
+}
+
+/* --- CANCELLED STATE --- */
+.tracker-cancelled {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: #fff1f1;
+  border: 1px solid #ffdddd;
+  padding: 16px;
+  border-radius: 6px;
+  color: #d32f2f;
+}
+.tracker-cancelled h4 { margin: 0; font-size: 16px; font-weight: 600; }
+.tracker-cancelled p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
+
+/* --- MAIN CONTAINER --- */
+.tracker-container {
+  display: flex;
+  flex-direction: column; /* Default: Mobile Vertical */
+  width: 100%;
+  padding: 10px 0;
+}
+
+/* --- STEP WRAPPER --- */
+.tracker-step {
+  display: flex;
+  gap: 16px; /* Space between Icon and Text */
+  position: relative;
+  /* Bottom padding ensures the vertical line has space to grow */
+  padding-bottom: 24px; 
+}
+
+/* Remove padding for the last item so it doesn't hang extra space */
+.tracker-step:last-child {
+  padding-bottom: 0;
+}
+
+/* --- VISUALS (Left Column: Icon + Line) --- */
+.step-visuals {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0; /* Prevent shrinking */
+  width: 32px; /* Fixed width for alignment */
+}
+
+/* THE ICON CIRCLE */
+.step-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #fff;
+  border: 2px solid var(--track-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--track-gray);
+  z-index: 2; /* Sit on top of line */
+  transition: all 0.3s ease;
+}
+
+/* Completed & Current States */
+.tracker-step.completed .step-icon {
+  background-color: var(--track-green);
+  border-color: var(--track-green);
+  color: #fff;
+}
+
+.tracker-step.current .step-icon {
+  box-shadow: 0 0 0 4px rgba(38, 165, 65, 0.2); /* Soft Pulse */
+  border-color: var(--track-green);
+  color: var(--track-green);
+  background-color: #fff;
+}
+/* If current is also completed (e.g. Delivered), keep it filled */
+.tracker-step.current.completed .step-icon {
+  background-color: var(--track-green);
+  color: #fff;
+}
+
+/* THE CONNECTING LINE */
+.step-line {
+  flex-grow: 1; /* Stretch to fill space */
+  width: 2px;
+  background-color: var(--track-gray);
+  min-height: 20px; /* Minimum height ensures line exists */
+  margin-top: -2px; /* Pull up slightly to touch icon */
+  margin-bottom: -2px;
+}
+
+.step-line.line-active {
+  background-color: var(--track-green);
+}
+
+/* --- CONTENT (Right Column: Labels + Meta) --- */
+.step-content {
+  /* Critical for Alignment: Centers text vertically relative to icon top */
+  padding-top: 4px; 
+  flex: 1;
+}
+
+.step-label {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  color: var(--track-text-sub);
+  line-height: 1.2;
+}
+
+.tracker-step.completed .step-label,
+.tracker-step.current .step-label {
+  color: var(--track-text-main);
+  font-weight: 600;
+}
+
+/* Meta Data (Date & Message) */
+.step-meta {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.step-date {
+  font-size: 11px;
+  color: var(--track-text-sub);
+}
+
+.step-message {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--track-blue-text);
+  background-color: var(--track-blue-bg);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #dbeafe;
+  line-height: 1.4;
+  align-self: flex-start; /* Don't stretch full width */
+}
+
+/* =========================================
+   DESKTOP VIEW (Horizontal)
+   ========================================= */
+@media (min-width: 768px) {
+  .tracker-container {
+    flex-direction: row; /* Horizontal Flow */
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 30px 0 10px 0;
+  }
+
+  .tracker-step {
+    flex-direction: column; /* Stack Icon on top of Text */
+    align-items: center;
+    text-align: center;
+    flex: 1; /* Equal Width */
+    padding-bottom: 0;
+    gap: 12px;
+  }
+
+  /* Visual Wrapper for Horizontal Line */
+  .step-visuals {
+    width: 100%;
+    flex-direction: row; /* Line goes sideways */
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: visible;
+  }
+
+  /* Line Positioning Magic */
+  .step-line {
+    position: absolute;
+    top: 50%;
+    left: 50%; /* Start from center of current icon */
+    width: 100%; /* Stretch to NEXT icon */
+    height: 3px; /* Horizontal Thickness */
+    transform: translateY(-50%);
+    z-index: 1;
+    min-height: 0; /* Reset vertical min-height */
+    margin: 0;
+  }
+
+  /* Reset Padding for Alignment */
+  .step-content {
+    padding-top: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .step-meta {
+    align-items: center;
+  }
+  
+  /* Prevent message from breaking layout */
+  .step-message {
+    max-width: 180px;
+    text-align: center;
+  }
+}
