@@ -4,13 +4,14 @@ import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import {
   LayoutDashboard, ShoppingBag, Mail, LogOut, Search, TrendingUp,
-  DollarSign, Package, Phone, MapPin, X, Trash2, List, User, CreditCard, Lock
-} from "lucide-react";
+  DollarSign, Package, Phone, MapPin, X, Trash2, List, User, CreditCard, Lock, Edit, UploadCloud,
+  IndianRupee
+} from "lucide-react"; 
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import API_URL from "../config";
-import "./AdminDashboard.css";
+import "./AdminDashboard.css"; // Ensure Enhanced CSS is imported
 
 function AdminDashboard() {
   const { token, logout } = useAuth();
@@ -27,12 +28,18 @@ function AdminDashboard() {
   const [products, setProducts] = useState([]);
   const [productSearch, setProductSearch] = useState("");
 
-  // --- OTP MODAL STATES ---
+  // --- OTP & EDIT STATES ---
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpInput, setOtpInput] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
+  
+  // ✅ Edit State for Images (Mix of Strings & Files)
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [editImages, setEditImages] = useState([]); 
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  // --- FETCH DASHBOARD DATA ---
+  // --- FETCH DATA ---
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -49,14 +56,11 @@ function AdminDashboard() {
         setOrders(Array.isArray(data.recentOrders) ? data.recentOrders : []);
         setSalesData(Array.isArray(data.salesData) ? data.salesData : []);
         setUnreadCount(data.unreadMessages || 0);
-      } catch (error) {
-        console.error("Dashboard Error:", error);
-      }
+      } catch (error) { console.error(error); }
     };
     if (token) fetchData();
   }, [token, navigate]);
 
-  // --- FETCH MESSAGES & PRODUCTS ---
   useEffect(() => {
     if (activeTab === "messages") {
       fetch(`${API_URL}/api/admin/messages`, { headers: { Authorization: `Bearer ${token}` } })
@@ -67,7 +71,7 @@ function AdminDashboard() {
     }
   }, [activeTab, token]);
 
-  // --- PRODUCT ACTIONS ---
+  // --- DELETE PRODUCT ---
   const handleDeleteProduct = async (styleCode) => {
     if (!window.confirm(`Delete product ${styleCode}?`)) return;
     try {
@@ -81,292 +85,314 @@ function AdminDashboard() {
     } catch (error) { toast.error("Server Error"); }
   };
 
-  // --- ORDER STATUS LOGIC (SECURE FLOW) ---
+  // --- EDIT PRODUCT LOGIC (FIXED FOR 4 IMAGES) ---
+  const handleEditClick = (product) => {
+    setEditingProduct(product);
+    setEditForm({
+      ...product,
+      MRP: product.MRP,
+      VARIANTS: product.VARIANTS || []
+    });
+    // Load existing images (URLs) into state
+    setEditImages(product.IMAGES || [product.IMAGE_URL]); 
+  };
 
-  // 1. Initial Request Handler
-const handleStatusChangeRequest = async (orderId, newStatus) => {
-    if (newStatus === "Delivered") {
-        if(!window.confirm("This will trigger an OTP email to the customer. Proceed?")) return;
+  const handleEditChange = (e) => {
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  };
+
+  const handleVariantChange = (index, field, value) => {
+    if (field === 'STOCK_QTY' && value < 0) return;
+    const updatedVariants = [...editForm.VARIANTS];
+    updatedVariants[index][field] = value;
+    setEditForm({ ...editForm, VARIANTS: updatedVariants });
+  };
+
+  // Handle Image Selection (Mix of old and new)
+  const handleEditImageSelect = (e) => {
+    const files = Array.from(e.target.files);
+    if (editImages.length + files.length > 4) {
+      return toast.error("Max 4 images allowed.");
+    }
+    setEditImages([...editImages, ...files]); // Add new files to existing array
+  };
+
+  // Remove Image (Works for both URL and File)
+  const handleRemoveEditImage = (index) => {
+    const updated = editImages.filter((_, i) => i !== index);
+    setEditImages(updated);
+  };
+
+  const handleUpdateSubmit = async () => {
+    setIsUpdating(true);
+    try {
+        let finalImageUrls = [];
         
+        // Loop through images: Upload files, keep URLs
+        for (const item of editImages) {
+            if (typeof item === 'string') {
+                // If it's already a URL, keep it
+                finalImageUrls.push(item);
+            } else {
+                // If it's a new File, upload to Cloudinary
+                const data = new FormData();
+                data.append("file", item);
+                data.append("upload_preset", import.meta.env.VITE_UPLOAD_PRESET);
+                data.append("cloud_name", import.meta.env.VITE_CLOUD_NAME);
+                
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/image/upload`, {
+                    method: "POST", body: data
+                });
+                const cloudData = await res.json();
+                finalImageUrls.push(cloudData.secure_url);
+            }
+        }
+
+        const updatedData = { 
+            ...editForm, 
+            IMAGES: finalImageUrls, 
+            IMAGE_URL: finalImageUrls[0] || editForm.IMAGE_URL // First image is main
+        };
+        
+        const res = await fetch(`${API_URL}/api/products/${editingProduct._id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify(updatedData)
+        });
+
+        if (res.ok) {
+            const result = await res.json();
+            toast.success("Product Updated!");
+            setProducts(products.map(p => p._id === result._id ? result : p));
+            setEditingProduct(null);
+        } else {
+            toast.error("Failed to update");
+        }
+    } catch (error) {
+        console.error(error);
+        toast.error("Error updating product");
+    } finally {
+        setIsUpdating(false);
+    }
+  };
+
+  // --- ORDER STATUS & OTP LOGIC ---
+  const handleStatusChangeRequest = async (orderId, newStatus) => {
+    if (newStatus === "Delivered") {
+        if(!window.confirm("Send OTP to customer?")) return;
         try {
-            // ✅ UPDATE URL HERE: '/api/admin/orders' -> '/api/orders/admin'
             const res = await fetch(`${API_URL}/api/orders/admin/${orderId}/generate-otp`, {
-                method: 'PUT',
-                headers: { Authorization: `Bearer ${token}` }
+                method: 'PUT', headers: { Authorization: `Bearer ${token}` }
             });
             const data = await res.json();
-            if(data.success) {
-                toast.info("OTP Sent to Customer Email");
-                setShowOtpModal(true); // Open Verification Modal
-            } else {
-                toast.error(data.message || "Failed to send OTP");
-            }
-        } catch (err) {
-            toast.error("Server Error sending OTP");
-        }
-        return; // Wait for OTP verification
+            if(data.success) { toast.info("OTP Sent"); setShowOtpModal(true); } 
+            else { toast.error(data.message); }
+        } catch (err) { toast.error("Server Error"); }
+        return;
     }
-
-    // B. Normal Status Flow (Shipped, Out for Delivery, etc.)
     updateStatusDirectly(orderId, newStatus);
   };
 
-  // 2. Direct Update Helper
-const updateStatusDirectly = async (orderId, newStatus) => {
-    const message = prompt(`Tracking Note for ${newStatus} (Optional):`, `Order is ${newStatus}`);
+  const updateStatusDirectly = async (orderId, newStatus) => {
     try {
-        // ✅ UPDATE URL HERE
         const res = await fetch(`${API_URL}/api/orders/admin/${orderId}/status`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ status: newStatus, message: message })
+            method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ status: newStatus })
         });
         const updatedOrder = await res.json();
         setOrders(prev => prev.map(o => o._id === orderId ? updatedOrder : o));
         setSelectedOrder(updatedOrder);
-        toast.success(`Status updated to ${newStatus}`);
+        toast.success(`Status: ${newStatus}`);
     } catch (error) { toast.error("Update failed"); }
   };
 
-  // 3. Verify OTP Helper
- const handleVerifyOtp = async () => {
-    if(!otpInput || otpInput.length < 6) return toast.error("Enter valid 6-digit OTP");
+  const handleVerifyOtp = async () => {
+    if(otpInput.length < 6) return toast.error("Invalid OTP");
     setOtpLoading(true);
-
     try {
-        // ✅ UPDATE URL HERE
         const res = await fetch(`${API_URL}/api/orders/admin/${selectedOrder._id}/verify-delivery`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ otp: otpInput })
         });
         const data = await res.json();
-
         if(data.success) {
-            toast.success("OTP Verified! Order Delivered Successfully.");
+            toast.success("Verified!");
             setOrders(prev => prev.map(o => o._id === selectedOrder._id ? data.order : o));
             setSelectedOrder(data.order);
-            setShowOtpModal(false);
-            setOtpInput("");
-        } else {
-            toast.error(data.message || "Invalid or Expired OTP");
-        }
-    } catch (err) {
-        toast.error("Verification Connection Error");
-    } finally {
-        setOtpLoading(false);
-    }
+            setShowOtpModal(false); setOtpInput("");
+        } else { toast.error("Invalid OTP"); }
+    } catch (err) { toast.error("Error"); } finally { setOtpLoading(false); }
   };
 
-  const filteredProducts = (Array.isArray(products) ? products : []).filter((p) => 
+  const filteredProducts = products.filter((p) => 
     p.STYLE_NAME?.toLowerCase().includes(productSearch.toLowerCase()) || p.STYLE?.toLowerCase().includes(productSearch.toLowerCase())
   );
 
   return (
     <div className="admin-container">
-      {/* --- SIDEBAR --- */}
+      {/* SIDEBAR */}
       <div className="sidebar">
-        <div className="logo-area">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white">L</div>
-          <span>Velora Admin</span>
-        </div>
+        <div className="logo-area"><div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">V</div>Velora Admin</div>
         <nav className="nav-links">
           <div className={`nav-item ${activeTab === "dashboard" ? "active" : ""}`} onClick={() => setActiveTab("dashboard")}><LayoutDashboard size={20} /> Dashboard</div>
           <div className={`nav-item ${activeTab === "orders" ? "active" : ""}`} onClick={() => setActiveTab("orders")}><ShoppingBag size={20} /> Orders</div>
           <div className={`nav-item ${activeTab === "products" ? "active" : ""}`} onClick={() => setActiveTab("products")}><List size={20} /> Products</div>
           <div className={`nav-item ${activeTab === "messages" ? "active" : ""}`} onClick={() => setActiveTab("messages")}>
-            <div className="flex justify-between w-full items-center">
-              <span className="flex gap-3 items-center"><Mail size={20} /> Inbox</span>
-              {unreadCount > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{unreadCount}</span>}
-            </div>
+             <div className="flex justify-between w-full items-center"><span className="flex gap-3"><Mail size={20} /> Inbox</span>{unreadCount > 0 && <span className="bg-red-500 text-white text-xs px-2 rounded-full">{unreadCount}</span>}</div>
           </div>
           <Link to="/admin/add-product" className="nav-item"><TrendingUp size={20} /> Add Product</Link>
         </nav>
         <div style={{ marginTop: "auto" }}><div className="nav-item" onClick={() => { logout(); navigate("/login"); }}><LogOut size={20} /> Logout</div></div>
       </div>
 
-      {/* --- MAIN CONTENT --- */}
+      {/* MAIN CONTENT */}
       <div className="main-content">
-        
-        {/* DASHBOARD VIEW */}
         {activeTab === "dashboard" && (
           <div className="dashboard-view">
             <h1 className="text-2xl font-bold mb-6 text-gray-800">Overview</h1>
             <div className="stats-grid-3">
-              <div className="stat-card-pro"><div className="icon bg-green-100 text-green-600"><DollarSign /></div><div><p className="label">Revenue</p><h3>₹{stats?.totalRevenue?.toLocaleString()}</h3></div></div>
+              <div className="stat-card-pro"><div className="icon bg-green-100 text-green-600"><IndianRupee /></div><div><p className="label">Revenue</p><h3>₹{stats?.totalRevenue?.toLocaleString()}</h3></div></div>
               <div className="stat-card-pro"><div className="icon bg-blue-100 text-blue-600"><Package /></div><div><p className="label">Orders</p><h3>{stats?.totalSales}</h3></div></div>
               <div className="stat-card-pro"><div className="icon bg-purple-100 text-purple-600"><Mail /></div><div><p className="label">Inbox</p><h3>{unreadCount} New</h3></div></div>
             </div>
-            <div className="chart-container mt-8">
-              <div className="chart-header"><h3 className="text-lg font-bold text-gray-700">Sales Trend</h3></div>
-              <div style={{ height: 320 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={salesData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <defs><linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#2563eb" stopOpacity={0.8}/><stop offset="95%" stopColor="#2563eb" stopOpacity={0}/></linearGradient></defs>
-                    <XAxis dataKey="_id" stroke="#94a3b8" /><YAxis stroke="#94a3b8" /><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" /><Tooltip />
-                    <Area type="monotone" dataKey="sales" stroke="#2563eb" fillOpacity={1} fill="url(#colorSales)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+            <div className="chart-container mt-8"><ResponsiveContainer width="100%" height={320}><AreaChart data={salesData}><XAxis dataKey="_id" stroke="#94a3b8" /><YAxis stroke="#94a3b8" /><Tooltip /><Area type="monotone" dataKey="sales" stroke="#2563eb" fill="#eff6ff" /></AreaChart></ResponsiveContainer></div>
           </div>
         )}
 
-        {/* ORDERS VIEW */}
         {activeTab === "orders" && (
           <div className="orders-view">
-            <div className="top-header">
-                <h1 className="text-2xl font-bold">Recent Orders</h1>
-            </div>
+            <h1 className="text-2xl font-bold mb-6 text-gray-800">Recent Orders</h1>
             <div className="order-table-container">
               <table className="admin-table">
                 <thead><tr><th>Order ID</th><th>Customer</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
-                <tbody>
-                  {orders.map((order) => (
-                    <tr key={order._id} onClick={() => setSelectedOrder(order)} className={selectedOrder?._id === order._id ? "selected-row" : ""}>
-                      <td className="font-mono">#{order._id.substring(order._id.length - 6).toUpperCase()}</td>
-                      <td>{order.customerName}</td>
-                      <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                      <td className="font-bold">₹{order.totalAmount}</td>
-                      <td><span className={`status-badge status-${order.status.toLowerCase().replace(/\s/g, '')}`}>{order.status}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
+                <tbody>{orders.map((order) => (<tr key={order._id} onClick={() => setSelectedOrder(order)}>
+                  <td className="font-mono text-gray-600">#{order._id.substring(order._id.length - 6).toUpperCase()}</td>
+                  <td>{order.customerName}</td><td>{new Date(order.createdAt).toLocaleDateString()}</td><td className="font-bold">₹{order.totalAmount}</td>
+                  <td><span className={`status-badge status-${order.status.toLowerCase().replace(/\s/g, '')}`}>{order.status}</span></td>
+                </tr>))}</tbody>
               </table>
             </div>
           </div>
         )}
 
-        {/* PRODUCTS VIEW */}
+        {/* ✅ FIXED SEARCH BAR & PRODUCTS */}
         {activeTab === "products" && (
           <div className="products-view">
-            <div className="top-header"><h1 className="text-2xl font-bold">Inventory</h1><div className="search-bar"><Search size={18} color="#9ca3af" /><input type="text" placeholder="Search..." value={productSearch} onChange={(e) => setProductSearch(e.target.value)} /></div></div>
+            <div className="top-header">
+                <h1 className="text-2xl font-bold text-gray-800">Inventory</h1>
+                <div className="search-wrapper">
+                    <Search size={18} color="#9ca3af" />
+                    <input type="text" placeholder="Search products..." value={productSearch} onChange={(e) => setProductSearch(e.target.value)} className="search-input" />
+                </div>
+            </div>
             <div className="order-table-container">
               <table className="admin-table">
                 <thead><tr><th>Image</th><th>Code</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Action</th></tr></thead>
-                <tbody>
-                  {filteredProducts.map((p) => {
+                <tbody>{filteredProducts.map((p) => {
                     const totalStock = p.VARIANTS ? p.VARIANTS.reduce((sum, v) => sum + v.STOCK_QTY, 0) : 0;
-                    return (
-                      <tr key={p._id}>
-                        <td><img src={p.IMAGE_URL} className="table-img" alt="" /></td>
-                        <td className="font-mono text-xs text-gray-500">{p.STYLE}</td>
-                        <td className="font-semibold">{p.STYLE_NAME}</td>
-                        <td>{p.CATEGORY}</td>
-                        <td>₹{p.MRP}</td>
+                    return (<tr key={p._id}>
+                        <td><img src={p.IMAGE_URL} className="table-img" alt="" /></td><td className="font-mono text-xs">{p.STYLE}</td><td className="font-semibold">{p.STYLE_NAME}</td><td>{p.CATEGORY}</td><td>₹{p.MRP}</td>
                         <td><span className={`status-badge ${totalStock < 5 ? 'status-cancelled' : 'status-delivered'}`}>{totalStock}</span></td>
-                        <td><button onClick={() => handleDeleteProduct(p.STYLE)} className="text-red-500 hover:bg-red-50 p-2 rounded-full"><Trash2 size={16} /></button></td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
+                        <td><div className="action-buttons"><button onClick={() => handleEditClick(p)} className="action-btn edit"><Edit size={16} /></button><button onClick={() => handleDeleteProduct(p.STYLE)} className="action-btn delete"><Trash2 size={16} /></button></div></td>
+                    </tr>)
+                })}</tbody>
               </table>
             </div>
           </div>
         )}
 
-        {/* MESSAGES VIEW */}
+        {/* ✅ FIXED INBOX STYLING */}
         {activeTab === "messages" && (
             <div className="messages-view">
-                <h1>Inbox</h1>
-                {messages.map(msg => (
-                    <div key={msg._id} className="message-item bg-white p-4 mb-2 rounded shadow-sm border">
-                        <div className="font-bold flex justify-between">{msg.name} <span className="text-gray-400 text-sm">{new Date(msg.createdAt).toLocaleDateString()}</span></div>
-                        <div className="text-blue-600 text-sm mb-1">{msg.subject}</div>
-                        <div className="text-gray-600 text-sm">{msg.message}</div>
-                        <div className="text-xs text-gray-400 mt-2">{msg.email}</div>
-                    </div>
-                ))}
+                <h1 className="text-2xl font-bold mb-6 text-gray-800">Inbox</h1>
+                <div className="messages-grid">
+                    {messages.map(msg => (
+                        <div key={msg._id} className="message-card">
+                            <div className="msg-header">
+                                <span className="msg-name">{msg.name}</span>
+                                <span className="msg-date">{new Date(msg.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            <div className="msg-subject">{msg.subject}</div>
+                            <div className="msg-body">{msg.message}</div>
+                            <span className="msg-email">{msg.email}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
         )}
       </div>
 
-      {/* --- RIGHT PANEL (ORDER DETAILS) --- */}
+      {/* --- ✅ DETAILED ORDER PANEL (FIXED) --- */}
       {selectedOrder && activeTab === "orders" && (
         <div className="details-panel">
           <div className="panel-header">
-            <div>
-                <h2>Order #{selectedOrder._id.substring(selectedOrder._id.length - 6).toUpperCase()}</h2>
-                <span className="text-xs text-gray-500">{new Date(selectedOrder.createdAt).toLocaleString()}</span>
-            </div>
-            <button className="close-btn" onClick={() => setSelectedOrder(null)}><X size={20} /></button>
+             <div>
+                 <h2>Order #{selectedOrder._id.substring(selectedOrder._id.length - 6).toUpperCase()}</h2>
+                 <span>Placed on {new Date(selectedOrder.createdAt).toLocaleString()}</span>
+             </div>
+             <button className="close-btn" onClick={() => setSelectedOrder(null)}><X size={24} /></button>
           </div>
           
           <div className="panel-content">
-            
-            {/* 1. Customer & Address */}
-            <div className="detail-card">
-                <div className="card-title"><User size={14} /> Customer Information</div>
-                <div className="customer-info-grid">
-                    <div className="customer-avatar">{selectedOrder.customerName?.charAt(0).toUpperCase()}</div>
-                    <div className="customer-text">
-                        <h3>{selectedOrder.customerName}</h3>
-                        <p><Mail size={12}/> {selectedOrder.email}</p>
-                        <p><Phone size={12}/> {selectedOrder.shippingInfo?.phone || "N/A"}</p>
-                        {selectedOrder.shippingInfo?.alternatePhone && (
-                            <p className="text-xs text-gray-500">Alt Phone: {selectedOrder.shippingInfo.alternatePhone}</p>
-                        )}
+            {/* Customer Section */}
+            <div className="section-title"><User size={16}/> Customer Details</div>
+            <div className="info-box">
+                <div className="user-row">
+                    <div className="avatar-circle">{selectedOrder.customerName?.charAt(0).toUpperCase()}</div>
+                    <div className="user-details">
+                        <h4>{selectedOrder.customerName}</h4>
+                        <span>{selectedOrder.email}</span>
+                        <span>{selectedOrder.shippingInfo?.phone}</span>
                     </div>
                 </div>
-                
-                {/* Detailed Address Block */}
-                <div className="shipping-details mt-4 p-3 bg-gray-50 rounded text-sm border border-gray-100">
-                    <div className="font-bold text-gray-700 flex items-center gap-2 mb-2">
-                        <MapPin size={14} className="text-blue-600" /> Shipping Address 
-                        <span className="text-xs font-normal bg-blue-100 text-blue-700 px-2 py-0.5 rounded ml-auto">
-                            {selectedOrder.shippingInfo?.addressType || 'Home'}
-                        </span>
+                {selectedOrder.shippingInfo && (
+                    <div className="address-text">
+                        <strong>Shipping To:</strong><br/>
+                        {selectedOrder.shippingInfo.address}, {selectedOrder.shippingInfo.locality}<br/>
+                        {selectedOrder.shippingInfo.city}, {selectedOrder.shippingInfo.state} - <b>{selectedOrder.shippingInfo.pincode}</b>
                     </div>
-                    
-                    <p className="mb-1 text-gray-800">{selectedOrder.shippingInfo?.address || "No Street Address"}</p>
-                    {selectedOrder.shippingInfo?.locality && <p className="mb-1 text-gray-600">{selectedOrder.shippingInfo.locality}</p>}
-                    {selectedOrder.shippingInfo?.landmark && <p className="mb-1 text-gray-500 text-xs">Landmark: {selectedOrder.shippingInfo.landmark}</p>}
-                    
-                    <div className="font-semibold text-gray-700 mt-2">
-                        {selectedOrder.shippingInfo?.city}, {selectedOrder.shippingInfo?.state} - {selectedOrder.shippingInfo?.pincode}
-                    </div>
+                )}
+            </div>
+
+            {/* Payment Section (New) */}
+            <div className="section-title"><CreditCard size={16}/> Payment Info</div>
+            <div className="payment-grid">
+                <div className="pay-item">
+                    <span className="pay-label">Total Amount</span>
+                    <span className="pay-val text-green-600">₹{selectedOrder.totalAmount}</span>
+                </div>
+                <div className="pay-item">
+                    <span className="pay-label">Payment ID</span>
+                    <span className="pay-val">{selectedOrder.razorpayPaymentId || "N/A"}</span>
+                </div>
+                <div className="pay-item">
+                    <span className="pay-label">Order ID (Rzp)</span>
+                    <span className="pay-val">{selectedOrder.razorpayOrderId || "N/A"}</span>
+                </div>
+                <div className={`pay-item ${!selectedOrder.paidAt ? 'pending' : ''}`}>
+                    <span className="pay-label">Payment Status</span>
+                    <span className="pay-val">{selectedOrder.paidAt ? "Paid" : "Pending"}</span>
                 </div>
             </div>
 
-            {/* 2. Payment Info */}
-            <div className="detail-card">
-                <div className="card-title"><CreditCard size={14} /> Payment Details</div>
-                <div className="payment-row"><span>Payment Method</span><strong>Online (Razorpay)</strong></div>
-                <div className="payment-row"><span>Transaction ID</span><strong className="font-mono text-xs">{selectedOrder.razorpayPaymentId || "N/A"}</strong></div>
-                <div className="payment-row"><span>Payment Date</span><strong>{selectedOrder.paidAt ? new Date(selectedOrder.paidAt).toLocaleDateString() : "N/A"}</strong></div>
-                <div className="payment-row"><span>Amount Paid</span><strong className="text-green-600">₹{selectedOrder.totalAmount}</strong></div>
-            </div>
-
-            {/* 3. Items */}
-            <div className="detail-card">
-                <div className="card-title"><Package size={14} /> Order Items ({selectedOrder.items?.length})</div>
-                {selectedOrder.items?.map((item, idx) => (
-                    <div key={idx} className="panel-item">
-                        <img src={item.image} alt="product" onError={(e) => (e.target.src = "https://via.placeholder.com/50")} />
-                        <div className="item-info">
-                            <p className="item-name">{item.name}</p>
-                            <div className="item-meta">Style: {item.style} | SKU: {item.styleCode || 'N/A'}</div>
-                            <div className="item-meta">Qty: {item.quantity} x ₹{item.price}</div>
-                        </div>
-                        <span className="item-price">₹{item.price * item.quantity}</span>
+            {/* Items Section */}
+            <div className="section-title"><Package size={16}/> Items ({selectedOrder.items?.length})</div>
+            {selectedOrder.items?.map((item, idx) => (
+                <div key={idx} className="item-row">
+                    <img src={item.image} alt="prod" className="item-thumb"/>
+                    <div className="item-details">
+                        <p className="item-title">{item.name}</p>
+                        <p className="item-meta">Size: {item.style} | Qty: {item.quantity}</p>
                     </div>
-                ))}
-                <div className="flex justify-between mt-4 pt-4 border-t border-gray-100 font-bold text-lg">
-                    <span>Grand Total</span>
-                    <span>₹{selectedOrder.totalAmount}</span>
+                    <span className="item-price">₹{item.price * item.quantity}</span>
                 </div>
-            </div>
+            ))}
           </div>
 
           {/* Footer Actions */}
           <div className="panel-footer">
             <label className="text-xs font-bold text-gray-500 uppercase block mb-2">Update Order Status</label>
-            <select 
-                className="status-select"
-                value={selectedOrder.status} 
-                onChange={(e) => handleStatusChangeRequest(selectedOrder._id, e.target.value)}
-                disabled={selectedOrder.status === 'Cancelled'} // Cancelled can't be undone easily
-            >
+            <select className="status-select" value={selectedOrder.status} onChange={(e) => handleStatusChangeRequest(selectedOrder._id, e.target.value)}>
                 <option value="Ordered">Ordered</option>
                 <option value="Shipped">Shipped</option>
                 <option value="Out for Delivery">Out for Delivery</option>
@@ -377,33 +403,48 @@ const updateStatusDirectly = async (orderId, newStatus) => {
         </div>
       )}
 
-      {/* --- OTP VERIFICATION MODAL --- */}
+      {/* --- OTP & EDIT MODALS --- */}
       {showOtpModal && (
         <div className="otp-modal-overlay">
-            <div className="otp-modal">
-                <div className="modal-icon"><Lock size={32}/></div>
-                <h3>Verify Delivery</h3>
-                <p>Please enter the 6-digit OTP sent to <strong>{selectedOrder?.email}</strong> to mark this order as Delivered.</p>
-                
-                <input 
-                    type="text" 
-                    placeholder="Enter OTP" 
-                    value={otpInput}
-                    maxLength={6}
-                    onChange={(e) => setOtpInput(e.target.value)}
-                    className="otp-input"
-                />
-                
-                <div className="modal-actions">
-                    <button className="cancel-btn" onClick={() => {setShowOtpModal(false); setOtpInput("");}}>Cancel</button>
-                    <button className="verify-btn" onClick={handleVerifyOtp} disabled={otpLoading}>
-                        {otpLoading ? "Verifying..." : "Verify & Deliver"}
-                    </button>
-                </div>
-            </div>
+           <div className="otp-modal">
+               <div className="modal-icon"><Lock size={32}/></div><h3>Verify Delivery</h3>
+               <input type="text" placeholder="Enter OTP" value={otpInput} maxLength={6} onChange={(e) => setOtpInput(e.target.value)} className="otp-input"/>
+               <div className="modal-actions"><button className="cancel-btn" onClick={() => setShowOtpModal(false)}>Cancel</button><button className="verify-btn" onClick={handleVerifyOtp} disabled={otpLoading}>Verify</button></div>
+           </div>
         </div>
       )}
 
+      {/* Edit Modal (Logic Fixed for Mixed Images) */}
+      {editingProduct && (
+        <div className="otp-modal-overlay">
+            <div className="edit-modal-content">
+                <button className="close-modal-btn" onClick={() => setEditingProduct(null)}><X size={24}/></button>
+                <h2 className="edit-modal-title">Edit Product</h2>
+                <div className="form-group"><label className="form-label">Name</label><input type="text" name="STYLE_NAME" value={editForm.STYLE_NAME} onChange={handleEditChange} className="form-input"/></div>
+                <div className="form-group"><label className="form-label">Price</label><input type="number" name="MRP" value={editForm.MRP} onChange={handleEditChange} className="form-input"/></div>
+                <div className="form-group"><label className="form-label">Variants (Stock)</label>
+                    <div className="variants-container">
+                        {editForm.VARIANTS?.map((v, i) => (
+                            <div key={i} className="variant-row"><span className="variant-label">{v.AGE}</span><input type="number" min="0" value={v.STOCK_QTY} onChange={(e) => handleVariantChange(i, 'STOCK_QTY', e.target.value)} className="variant-input" /></div>
+                        ))}
+                    </div>
+                </div>
+                <div className="form-group"><label className="form-label">Images ({editImages.length}/4)</label>
+                    <div className="image-grid">
+                        {/* Display existing URL or new File preview */}
+                        {editImages.map((img, i) => (
+                            <div key={i} className="image-preview-box">
+                                <img src={typeof img === 'string' ? img : URL.createObjectURL(img)} alt="prev" />
+                                <button className="remove-img-btn" onClick={() => handleRemoveEditImage(i)}><X size={10}/></button>
+                            </div>
+                        ))}
+                        {editImages.length < 4 && (<label className="upload-box" style={{width:'70px', height:'70px', padding:0}}><input type="file" multiple accept="image/*" onChange={handleEditImageSelect} hidden /><UploadCloud size={20}/></label>)}
+                    </div>
+                </div>
+                <button onClick={handleUpdateSubmit} disabled={isUpdating} className="save-btn">{isUpdating ? "Saving..." : "Save Changes"}</button>
+            </div>
+        </div>
+      )}
     </div>
   );
 }
